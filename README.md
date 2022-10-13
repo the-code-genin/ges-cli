@@ -1,2 +1,3 @@
-# cryptware
-A suite of cryptography tools to communicate securely over the internet.
+# GES CLI
+
+A simple block cipher encryption algorithm implementation.
