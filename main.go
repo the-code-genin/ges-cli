@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	cli "github.com/the-code-genin/cryptware/cli"
+)
 
 func main() {
-	fmt.Println("hello world!")
+	app := cli.CreateNewApp()
+	if err := app.Run(os.Args); err != nil {
+		panic(err)
+	}
 }
