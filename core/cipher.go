@@ -47,7 +47,7 @@ func (c *GESCipher) runEncryption(
 func (c *GESCipher) Encrypt(block []byte, key []byte) ([]byte, error) {
 	blockSize := len(block)
 	if blockSize % 2 != 0 {
-		return nil, fmt.Errorf("block size must be even")
+		block = append(block, 0)
 	}
 
 	halfBlockSize := blockSize/2
