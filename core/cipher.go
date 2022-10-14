@@ -25,12 +25,10 @@ func (c *GESCipher) runEncryption(
 ) ([]byte, []byte, error) {
 	if round <= 0 {
 		return leftBlock, rightBlock, nil
-	} else if len(leftBlock) != 4 {
-		return nil, nil, fmt.Errorf("left and right blocks must be 32 bits long")
 	} else if len(leftBlock) != len(rightBlock) {
-		return nil, nil, fmt.Errorf("left and right blocks must be 32 bits long")
-	} else if len(key) != 4 {
-		return nil, nil, fmt.Errorf("key must 32 bits long")
+		return nil, nil, fmt.Errorf("left and right half blocks must be of the same size")
+	} else if len(key) != len(leftBlock) {
+		return nil, nil, fmt.Errorf("key size must be the same size as a half block")
 	}
 
 	roundFuncOutput, err := c.runXOR(rightBlock, key)
@@ -47,7 +45,14 @@ func (c *GESCipher) runEncryption(
 }
 
 func (c *GESCipher) Encrypt(block []byte, key []byte) ([]byte, error) {
-	leftBlock, rightBlock, err := c.runEncryption(block[:4], block[4:], key, 2)
+	blockSize := len(block)
+	if blockSize % 2 != 0 {
+		return nil, fmt.Errorf("block size must be even")
+	}
+
+	halfBlockSize := blockSize/2
+
+	leftBlock, rightBlock, err := c.runEncryption(block[:halfBlockSize], block[halfBlockSize:], key, 2)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +72,10 @@ func (c *GESCipher) runDecryption(
 ) ([]byte, []byte, error) {
 	if round <= 0 {
 		return leftBlock, rightBlock, nil
-	} else if len(leftBlock) != 4 {
-		return nil, nil, fmt.Errorf("left and right blocks must be 32 bits long")
 	} else if len(leftBlock) != len(rightBlock) {
-		return nil, nil, fmt.Errorf("left and right blocks must be 32 bits long")
-	} else if len(key) != 4 {
-		return nil, nil, fmt.Errorf("key must 32 bits long")
+		return nil, nil, fmt.Errorf("left and right half blocks must be of the same size")
+	} else if len(key) != len(leftBlock) {
+		return nil, nil, fmt.Errorf("key size must be the same size as a half block")
 	}
 
 	roundFuncOutput, err := c.runXOR(leftBlock, key)
@@ -89,7 +92,14 @@ func (c *GESCipher) runDecryption(
 }
 
 func (c *GESCipher) Decrypt(block []byte, key []byte) ([]byte, error) {
-	leftBlock, rightBlock, err := c.runDecryption(block[4:], block[:4], key, 2)
+	blockSize := len(block)
+	if blockSize % 2 != 0 {
+		return nil, fmt.Errorf("block size must be even")
+	}
+
+	halfBlockSize := blockSize/2
+
+	leftBlock, rightBlock, err := c.runDecryption(block[halfBlockSize:], block[:halfBlockSize], key, 2)
 	if err != nil {
 		return nil, err
 	}
