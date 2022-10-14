@@ -31,3 +31,20 @@ func FuzzBinaryXOR(f *testing.F) {
 		}
 	})
 }
+
+func FuzzBitConversion(f *testing.F) {
+	f.Add(byte(8))
+	f.Add(byte(0))
+	f.Add(byte(128))
+	f.Add(byte(255))
+
+	binary := Binary{}
+	f.Fuzz(func(t *testing.T, a byte) {
+		bitArray := binary.ByteToBitArray(a)
+		if b, err := binary.BitArrayToByte(bitArray); err != nil {
+			t.Error(err)
+		} else if b != a {
+			t.Errorf("expected %v to equal %v", b, a)
+		}
+	})
+}
