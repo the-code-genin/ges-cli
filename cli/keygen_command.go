@@ -10,8 +10,8 @@ import (
 var (
 	keygenFlags = []cli.Flag{
 		keySizeFlag,
-		formatFlag,
-		outputFlag,
+		outputFormatFlag,
+		outputFileFlag,
 	}
 
 	keygenCommand = &cli.Command{
@@ -23,7 +23,7 @@ var (
 )
 
 func keygenAction(ctx *cli.Context) error {
-	keySize := ctx.Uint64("size")
+	keySize := ctx.Uint64("key.size")
 	if keySize%32 != 0 {
 		return fmt.Errorf("key sizes must be a multiple of 32 bits")
 	}
@@ -33,8 +33,8 @@ func keygenAction(ctx *cli.Context) error {
 		return err
 	}
 
-	outputFilePath := ctx.String("output")
-	encodingFormat := ctx.String("format")
+	outputFilePath := ctx.String("output.file")
+	encodingFormat := ctx.String("output.format")
 	if encodingFormat == "binary" {
 		if outputFilePath == "" {
 			return fmt.Errorf("output file path is required for binary encoding")
