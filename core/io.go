@@ -55,6 +55,11 @@ func ReadFile(file *os.File, offset int64, len int) ([]byte, error) {
 // Write data to a section of a file
 // Note: Does not flush the changes to the file system
 func WriteToFile(file *os.File, offset int64, data []byte) error {
+	err := file.Truncate(0)
+	if err != nil {
+		return err
+	}
+
 	off, err := file.Seek(offset, 0)
 	if err != nil {
 		return err
