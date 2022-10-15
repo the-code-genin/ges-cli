@@ -69,3 +69,26 @@ func FuzzBitPadding(f *testing.F) {
 		}
 	})
 }
+
+func TestExternalByteUnpadding(t *testing.T) {
+	binary := Binary{}
+	data := []byte{5, 1<<1}
+	dataClone := []byte{5, 1<<1}
+
+	lastByte := binary.ByteToBitArray(dataClone[1])
+	lastByte[7] = 1
+	compressedByte, err := binary.BitArrayToByte(lastByte)
+	if err != nil {
+		t.Error(err)
+	}
+	dataClone[1] = compressedByte
+
+	unpaddedBytes, err := binary.UnpadBytes(dataClone)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if unpaddedBytes[1] != data[1] {
+		t.Errorf("expected %v to equal %v", unpaddedBytes[1], data[1])
+	}
+}
