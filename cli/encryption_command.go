@@ -9,7 +9,6 @@ import (
 
 var (
 	encryptionFlags = []cli.Flag{
-		keySizeFlag,
 		keyFileFlag,
 		keyFormatFlag,
 		inputFormatFlag,
@@ -64,7 +63,7 @@ func encryptionAction(ctx *cli.Context) error {
 	}
 
 	// Encrypt the plain text
-	keySize := ctx.Uint64("key.size")
+	keySize := uint64(len(key) * 8)
 	if keySize%32 != 0 {
 		return fmt.Errorf("key sizes must be a multiple of 32 bits")
 	}
