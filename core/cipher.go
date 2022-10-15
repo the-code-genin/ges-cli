@@ -2,19 +2,9 @@ package core
 
 import "fmt"
 
-type GESCipher struct{}
-
-func (c *GESCipher) runXOR(blockA []byte, blockB []byte) ([]byte, error) {
-	if len(blockA) != len(blockB) {
-		return nil, fmt.Errorf("size of blocks to be XOR do not match")
-	}
-
-	output := make([]byte, len(blockA))
-	for i := 0; i < len(blockA); i++ {
-		output[i] = blockA[i] ^ blockB[i]
-	}
-
-	return output, nil
+type GESCipher struct {
+	binary    Binary
+	blockSize uint64
 }
 
 func (c *GESCipher) runEncryption(
@@ -108,9 +98,10 @@ func (c *GESCipher) Decrypt(block []byte, key []byte) ([]byte, error) {
 	output = append(output, leftBlock...)
 	output = append(output, rightBlock...)
 
-	return output, nil
-}
+func NewGESCipher(blockSize uint64) (*GESCipher, error) {
+	if blockSize%8 != 0 {
+		return nil, fmt.Errorf("block size must be a multiple of 8")
+	}
 
-func NewGESCipher() *GESCipher {
-	return &GESCipher{}
+	return &GESCipher{Binary{}, blockSize}, nil
 }
