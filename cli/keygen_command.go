@@ -33,22 +33,19 @@ func keygenAction(ctx *cli.Context) error {
 		return err
 	}
 
-	encodingFormat := ctx.String("format")
-	encodedKey, err := core.EncodeBytes(key, encodingFormat)
-	if err != nil {
-		return err
-	}
-
 	outputFilePath := ctx.String("output")
-	if outputFilePath == "" {
-		fmt.Print(encodedKey)
-	} else {
+	encodingFormat := ctx.String("format")
+	if encodingFormat == "binary" {
+		if outputFilePath == "" {
+			return fmt.Errorf("output file path is required for binary encoding")
+		}
+
 		file, err := core.OpenFile(outputFilePath)
 		if err != nil {
 			return err
 		}
 
-		err = core.WriteToFile(file, 0, []byte(encodedKey))
+		err = core.WriteToFile(file, 0, key)
 		if err != nil {
 			return err
 		}
@@ -56,6 +53,30 @@ func keygenAction(ctx *cli.Context) error {
 		err = file.Sync()
 		if err != nil {
 			return err
+		}
+	} else {
+		encodedKey, err := core.EncodeBytes(key, encodingFormat)
+		if err != nil {
+			return err
+		}
+
+		if outputFilePath == "" {
+			fmt.Print(encodedKey)
+		} else {
+			file, err := core.OpenFile(outputFilePath)
+			if err != nil {
+				return err
+			}
+	
+			err = core.WriteToFile(file, 0, []byte(encodedKey))
+			if err != nil {
+				return err
+			}
+	
+			err = file.Sync()
+			if err != nil {
+				return err
+			}
 		}
 	}
 

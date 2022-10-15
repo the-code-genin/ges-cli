@@ -15,7 +15,7 @@ var (
 	formatFlag = &cli.StringFlag{
 		Name:       "format",
 		Aliases:    []string{"f"},
-		Usage:      "The output format. Available options are \"hex\" and \"base64\".",
+		Usage:      "The output format. Available options are \"binary\", \"hex\" and \"base64\".",
 		Value:      "hex",
 		Required:   true,
 		HasBeenSet: true,
@@ -24,5 +24,6 @@ var (
 	outputFlag = &cli.StringFlag{
 		Name:    "output",
 		Aliases: []string{"o"},
+		Usage:   "The output file path. Required for \"binary\" output format",
 	}
 )
