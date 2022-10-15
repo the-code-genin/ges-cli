@@ -15,18 +15,14 @@ func (c *GESCipher) runEncryption(
 ) ([]byte, []byte, error) {
 	if round <= 0 {
 		return leftBlock, rightBlock, nil
-	} else if len(leftBlock) != len(rightBlock) {
-		return nil, nil, fmt.Errorf("left and right half blocks must be of the same size")
-	} else if len(key) != len(leftBlock) {
-		return nil, nil, fmt.Errorf("key size must be the same size as a half block")
 	}
 
-	roundFuncOutput, err := c.runXOR(rightBlock, key)
+	roundFuncOutput, err := c.binary.RunXOR(rightBlock, key)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	outputRightBlock, err := c.runXOR(leftBlock, roundFuncOutput)
+	outputRightBlock, err := c.binary.RunXOR(leftBlock, roundFuncOutput)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -34,14 +30,8 @@ func (c *GESCipher) runEncryption(
 	return c.runEncryption(rightBlock, outputRightBlock, key, round-1)
 }
 
-func (c *GESCipher) Encrypt(block []byte, key []byte) ([]byte, error) {
-	blockSize := len(block)
-	if blockSize % 2 != 0 {
-		block = append(block, 0)
-	}
-
-	halfBlockSize := blockSize/2
-
+func (c *GESCipher) encrypt(block []byte, key []byte) ([]byte, error) {
+	halfBlockSize := c.blockSize / 16
 	leftBlock, rightBlock, err := c.runEncryption(block[:halfBlockSize], block[halfBlockSize:], key, 2)
 	if err != nil {
 		return nil, err
@@ -62,33 +52,23 @@ func (c *GESCipher) runDecryption(
 ) ([]byte, []byte, error) {
 	if round <= 0 {
 		return leftBlock, rightBlock, nil
-	} else if len(leftBlock) != len(rightBlock) {
-		return nil, nil, fmt.Errorf("left and right half blocks must be of the same size")
-	} else if len(key) != len(leftBlock) {
-		return nil, nil, fmt.Errorf("key size must be the same size as a half block")
 	}
 
-	roundFuncOutput, err := c.runXOR(leftBlock, key)
+	roundFuncOutput, err := c.binary.RunXOR(leftBlock, key)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	outputLeftBlock, err := c.runXOR(rightBlock, roundFuncOutput)
+	outputLeftBlock, err := c.binary.RunXOR(rightBlock, roundFuncOutput)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return c.runEncryption(outputLeftBlock, rightBlock, key, round-1)
+	return c.runDecryption(outputLeftBlock, leftBlock, key, round-1)
 }
 
-func (c *GESCipher) Decrypt(block []byte, key []byte) ([]byte, error) {
-	blockSize := len(block)
-	if blockSize % 2 != 0 {
-		return nil, fmt.Errorf("block size must be even")
-	}
-
-	halfBlockSize := blockSize/2
-
+func (c *GESCipher) decrypt(block []byte, key []byte) ([]byte, error) {
+	halfBlockSize := c.blockSize / 16
 	leftBlock, rightBlock, err := c.runDecryption(block[halfBlockSize:], block[:halfBlockSize], key, 2)
 	if err != nil {
 		return nil, err
