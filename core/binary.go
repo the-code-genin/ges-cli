@@ -65,9 +65,10 @@ func (b Binary) PadBytes(data []byte, blockSize uint64) ([]byte, error) {
 	blockByteSize := int(blockSize / 8)
 	noBlocks := int(math.Ceil(float64(dataByteSize) / float64(blockByteSize)))
 	fillableBytes := make([]byte, (noBlocks*blockByteSize)-dataByteSize)
-	if len(fillableBytes) > 0 {
-		fillableBytes[0] = uint8(1 << 7)
+	if len(fillableBytes) == 0 {
+		fillableBytes = make([]byte, blockByteSize)
 	}
+	fillableBytes[0] = uint8(1 << 7)
 
 	output := make([]byte, 0)
 	output = append(output, data...)
