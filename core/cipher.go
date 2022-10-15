@@ -8,19 +8,41 @@ import (
 type GESCipher struct {
 	binary    Binary
 	blockSize uint64
+	rounds    uint8
+}
+
+func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte, error) {
+	if len(key) != int(c.rounds) {
+		return nil, fmt.Errorf("keys must be 64 bits long")
+	}
+
+	roundByteIndex := c.rounds - round
+	roundByte := key[roundByteIndex]
+
+	// Create the round key by flipping every odd-indexed bit of the round byte
+	roundKey := make([]byte, len(key))
+	roundKey = append(roundKey, key...)
+	for i := 0; i < 8; i++ {
+		if i % 2 != 0 || i == 0 {
+			roundByte = roundByte ^ (1 << i)
+		}
+	}
+	roundKey[roundByteIndex] = roundByte
+
+	return c.binary.RunXOR(block, key)
 }
 
 func (c *GESCipher) runEncryption(
 	leftBlock []byte,
 	rightBlock []byte,
 	key []byte,
-	round uint64,
+	round uint8,
 ) ([]byte, []byte, error) {
 	if round <= 0 {
 		return leftBlock, rightBlock, nil
 	}
 
-	roundFuncOutput, err := c.binary.RunXOR(rightBlock, key)
+	roundFuncOutput, err := c.runRoundFunc(rightBlock, key, round)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,7 +57,7 @@ func (c *GESCipher) runEncryption(
 
 func (c *GESCipher) encrypt(block []byte, key []byte) ([]byte, error) {
 	halfBlockSize := c.blockSize / 16
-	leftBlock, rightBlock, err := c.runEncryption(block[:halfBlockSize], block[halfBlockSize:], key, 2)
+	leftBlock, rightBlock, err := c.runEncryption(block[:halfBlockSize], block[halfBlockSize:], key, c.rounds)
 	if err != nil {
 		return nil, err
 	}
@@ -80,13 +102,13 @@ func (c *GESCipher) runDecryption(
 	leftBlock []byte,
 	rightBlock []byte,
 	key []byte,
-	round uint64,
+	round uint8,
 ) ([]byte, []byte, error) {
 	if round <= 0 {
 		return leftBlock, rightBlock, nil
 	}
 
-	roundFuncOutput, err := c.binary.RunXOR(leftBlock, key)
+	roundFuncOutput, err := c.runRoundFunc(leftBlock, key, round)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -101,7 +123,7 @@ func (c *GESCipher) runDecryption(
 
 func (c *GESCipher) decrypt(block []byte, key []byte) ([]byte, error) {
 	halfBlockSize := c.blockSize / 16
-	leftBlock, rightBlock, err := c.runDecryption(block[halfBlockSize:], block[:halfBlockSize], key, 2)
+	leftBlock, rightBlock, err := c.runDecryption(block[halfBlockSize:], block[:halfBlockSize], key, c.rounds)
 	if err != nil {
 		return nil, err
 	}
@@ -152,5 +174,5 @@ func (c *GESCipher) Decrypt(data []byte, key []byte) ([]byte, error) {
 }
 
 func NewGESCipher() (*GESCipher, error) {
-	return &GESCipher{Binary{}, 128}, nil
+	return &GESCipher{Binary{}, 128, 8}, nil
 }
