@@ -5,7 +5,7 @@ import "github.com/urfave/cli/v2"
 var (
 	decryptionCommand = &cli.Command{
 		Name: "decrypt",
-		Usage: "Run decryption algorithm.",
+		Usage: "Decrypt data.",
 		Action: decryptionAction,
 	}
 )

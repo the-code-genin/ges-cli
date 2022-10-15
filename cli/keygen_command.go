@@ -8,34 +8,23 @@ import (
 )
 
 var (
-	keygenFlags  = []cli.Flag{
-		&cli.Uint64Flag{
-			Name: "size",
-			Usage: "The key size in bits. Must be a multiple of 32 bits.",
-			Value: 32,
-			Required: true,
-			HasBeenSet: true,
-		},
-		&cli.StringFlag{
-			Name: "format",
-			Usage: "The output format. Available options are \"hex\" and \"base64\".",
-			Value: "hex",
-			Required: true,
-			HasBeenSet: true,
-		},
+	keygenFlags = []cli.Flag{
+		keySizeFlag,
+		formatFlag,
+		outputFlag,
 	}
 
 	keygenCommand = &cli.Command{
-		Name: "keygen",
-		Usage: "Generate a new encryption key.",
-		Flags: keygenFlags,
+		Name:   "keygen",
+		Usage:  "Generate a new encryption key.",
+		Flags:  keygenFlags,
 		Action: keygenAction,
 	}
 )
 
 func keygenAction(ctx *cli.Context) error {
 	keySize := ctx.Uint64("size")
-	if keySize % 32 != 0 {
+	if keySize%32 != 0 {
 		return fmt.Errorf("key sizes must be a multiple of 32 bits")
 	}
 
@@ -50,6 +39,25 @@ func keygenAction(ctx *cli.Context) error {
 		return err
 	}
 
-	fmt.Printf(encodedKey)
+	outputFilePath := ctx.String("output")
+	if outputFilePath == "" {
+		fmt.Print(encodedKey)
+	} else {
+		file, err := core.OpenFile(outputFilePath)
+		if err != nil {
+			return err
+		}
+
+		err = core.WriteToFile(file, 0, []byte(encodedKey))
+		if err != nil {
+			return err
+		}
+
+		err = file.Sync()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
