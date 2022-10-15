@@ -51,8 +51,36 @@ func FuzzBitConversion(f *testing.F) {
 
 func FuzzBitPadding(f *testing.F) {
 	f.Add([]byte("Hello world"), uint64(32))
-	f.Add([]byte("Foor barr"), uint64(64))
-	f.Add([]byte{2, 5}, uint64(32))
+
+	tinyBlock, err := RandomBytes(16)
+	if err != nil {
+		f.Error(err)
+	}
+	f.Add(tinyBlock, uint64(64))
+
+	smallBlock, err := RandomBytes(48)
+	if err != nil {
+		f.Error(err)
+	}
+	f.Add(smallBlock, uint64(64))
+
+	midBlock, err := RandomBytes(256)
+	if err != nil {
+		f.Error(err)
+	}
+	f.Add(midBlock, uint64(32))
+
+	largeBlock, err := RandomBytes(512)
+	if err != nil {
+		f.Error(err)
+	}
+	f.Add(largeBlock, uint64(64))
+
+	superLargeBlock, err := RandomBytes(2560)
+	if err != nil {
+		f.Error(err)
+	}
+	f.Add(superLargeBlock, uint64(32))
 
 	binary := Binary{}
 	f.Fuzz(func(t *testing.T, a []byte, b uint64) {
