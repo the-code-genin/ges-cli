@@ -6,13 +6,12 @@ import (
 )
 
 func FuzzGESCipher(f *testing.F) {
-	// We are working with a 64 bit cipher
-	cipher, err := NewGESCipher(64)
+	cipher, err := NewGESCipher()
 	if err != nil {
 		f.Error(err)
 	}
 
-	// Generate a random 32-bit key
+	// Generate a random 64-bit key
 	key, err := RandomBytes(cipher.blockSize / 16)
 	if err != nil {
 		f.Error(err)

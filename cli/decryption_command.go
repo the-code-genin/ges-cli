@@ -64,8 +64,8 @@ func decryptionAction(ctx *cli.Context) error {
 
 	// Decrypt the cipher text
 	keySize := uint64(len(key) * 8)
-	if keySize%32 != 0 {
-		return fmt.Errorf("key sizes must be a multiple of 32 bits")
+	if keySize != 64 {
+		return fmt.Errorf("key sizes must be 64 bits")
 	}
 
 	cipherTextFileLen, err := core.LengthOfFile(cipherTextFile)
@@ -86,7 +86,7 @@ func decryptionAction(ctx *cli.Context) error {
 		}
 	}
 
-	cipher, err := core.NewGESCipher(keySize * 2)
+	cipher, err := core.NewGESCipher()
 	if err != nil {
 		return err
 	}

@@ -151,10 +151,6 @@ func (c *GESCipher) Decrypt(data []byte, key []byte) ([]byte, error) {
 	return unpaddedOutput, nil
 }
 
-func NewGESCipher(blockSize uint64) (*GESCipher, error) {
-	if blockSize%64 != 0 {
-		return nil, fmt.Errorf("block size must be a multiple of 64 bits")
-	}
-
-	return &GESCipher{Binary{}, blockSize}, nil
+func NewGESCipher() (*GESCipher, error) {
+	return &GESCipher{Binary{}, 128}, nil
 }

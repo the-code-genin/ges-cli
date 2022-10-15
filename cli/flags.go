@@ -3,14 +3,6 @@ package cli
 import "github.com/urfave/cli/v2"
 
 var (
-	keySizeFlag = &cli.Uint64Flag{
-		Name:       "key.size",
-		Usage:      "The key size in bits. Must be a multiple of 32 bits.",
-		Value:      32,
-		Required:   true,
-		HasBeenSet: true,
-	}
-
 	keyFileFlag = &cli.StringFlag{
 		Name:     "key.file",
 		Usage:    "The key file path.",

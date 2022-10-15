@@ -9,7 +9,6 @@ import (
 
 var (
 	keygenFlags = []cli.Flag{
-		keySizeFlag,
 		outputFormatFlag,
 		outputFileFlag,
 	}
@@ -23,12 +22,7 @@ var (
 )
 
 func keygenAction(ctx *cli.Context) error {
-	keySize := ctx.Uint64("key.size")
-	if keySize%32 != 0 {
-		return fmt.Errorf("key sizes must be a multiple of 32 bits")
-	}
-
-	key, err := core.RandomBytes(keySize / 8)
+	key, err := core.RandomBytes(64 / 8)
 	if err != nil {
 		return err
 	}
