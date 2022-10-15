@@ -96,8 +96,6 @@ func decryptionAction(ctx *cli.Context) error {
 		return err
 	}
 
-	fmt.Println((plainText))
-
 	// Record the output
 	outputFilePath := ctx.String("output.file")
 	encodingFormat := ctx.String("output.format")
