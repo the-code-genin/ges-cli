@@ -1,4 +1,4 @@
-module github.com/the-code-genin/cryptware
+module github.com/the-code-genin/ges-cli
 
 go 1.18
 

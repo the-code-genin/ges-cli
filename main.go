@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	cli "github.com/the-code-genin/cryptware/cli"
+	cli "github.com/the-code-genin/ges-cli/cli"
 )
 
 func main() {
