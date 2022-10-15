@@ -21,7 +21,15 @@ var (
 	keyFormatFlag = &cli.StringFlag{
 		Name:       "key.format",
 		Usage:      "The key file format. Available options are \"binary\", \"hex\" and \"base64\".",
-		Value:      "hex",
+		Value:      "binary",
+		Required:   true,
+		HasBeenSet: true,
+	}
+
+	inputFormatFlag = &cli.StringFlag{
+		Name:       "input.format",
+		Usage:      "The input format. Available options are \"binary\", \"hex\" and \"base64\".",
+		Value:      "binary",
 		Required:   true,
 		HasBeenSet: true,
 	}
@@ -30,7 +38,7 @@ var (
 		Name:       "output.format",
 		Aliases:    []string{"f"},
 		Usage:      "The output format. Available options are \"binary\", \"hex\" and \"base64\".",
-		Value:      "hex",
+		Value:      "binary",
 		Required:   true,
 		HasBeenSet: true,
 	}

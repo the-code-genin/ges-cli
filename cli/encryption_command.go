@@ -12,6 +12,7 @@ var (
 		keySizeFlag,
 		keyFileFlag,
 		keyFormatFlag,
+		inputFormatFlag,
 		outputFormatFlag,
 		outputFileFlag,
 	}
@@ -76,6 +77,14 @@ func encryptionAction(ctx *cli.Context) error {
 	plainText, err := core.ReadFile(plainFile, 0, int(plainFileLen))
 	if err != nil {
 		return err
+	}
+
+	inputFormat := ctx.String("input.format")
+	if inputFormat != "binary" {
+		plainText, err = core.DecodeBytes(string(plainText), inputFormat)
+		if err != nil {
+			return err
+		}
 	}
 
 	cipher, err := core.NewGESCipher(keySize * 2)
