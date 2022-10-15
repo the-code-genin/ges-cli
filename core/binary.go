@@ -24,6 +24,36 @@ func (b Binary) RunXOR(blockA []byte, blockB []byte) ([]byte, error) {
 	return output, nil
 }
 
+// Run NXOR on the bits in blockA and blockB.
+// Both blocks must be of the same size.
+func (b Binary) RunNXOR(blockA []byte, blockB []byte) ([]byte, error) {
+	if len(blockA) != len(blockB) {
+		return nil, fmt.Errorf("size of blocks to be XOR do not match")
+	}
+
+	output := make([]byte, len(blockA))
+	for i := 0; i < len(blockA); i++ {
+		xorOutput := blockA[i] ^ blockB[i]
+
+		bitArray := b.ByteToBitArray(xorOutput)
+		for j := 0; j < len(bitArray); j++ {
+			if bitArray[j] == 0 {
+				bitArray[j] = 1
+			} else {
+				bitArray[j] = 0
+			}
+		}
+
+		nxorOutput, err := b.BitArrayToByte(bitArray)
+		if err != nil {
+			return nil, err
+		}
+		output[i] = nxorOutput
+	}
+
+	return output, nil
+}
+
 // Convert a byte into a bit array for easier manipulation
 func (b Binary) ByteToBitArray(data byte) []Bit {
 	output := make([]Bit, 8)
