@@ -65,7 +65,7 @@ func (c *GESCipher) Encrypt(data []byte, key []byte) ([]byte, error) {
 	noBlocks := len(paddedData) / blockBytes
 	for i := 0; i < noBlocks; i++ {
 		offset := i * blockBytes
-		cipherText, err := c.encrypt(data[offset:offset+blockBytes], key)
+		cipherText, err := c.encrypt(paddedData[offset:offset+blockBytes], key)
 		if err != nil {
 			return nil, err
 		}
@@ -143,12 +143,17 @@ func (c *GESCipher) Decrypt(data []byte, key []byte) ([]byte, error) {
 		output = append(output, plainText...)
 	}
 
-	return output, nil
+	unpaddedOutput, err := c.binary.UnpadBytes(output)
+	if err != nil {
+		return nil, err
+	}
+
+	return unpaddedOutput, nil
 }
 
 func NewGESCipher(blockSize uint64) (*GESCipher, error) {
-	if blockSize%8 != 0 {
-		return nil, fmt.Errorf("block size must be a multiple of 8")
+	if blockSize%64 != 0 {
+		return nil, fmt.Errorf("block size must be a multiple of 64 bits")
 	}
 
 	return &GESCipher{Binary{}, blockSize}, nil
