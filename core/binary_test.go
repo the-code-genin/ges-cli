@@ -48,3 +48,24 @@ func FuzzBitConversion(f *testing.F) {
 		}
 	})
 }
+
+func FuzzBitPadding(f *testing.F) {
+	f.Add([]byte("Hello world"), uint64(32))
+	f.Add([]byte("Foor barr"), uint64(64))
+	f.Add([]byte{2, 5}, uint64(32))
+
+	binary := Binary{}
+	f.Fuzz(func(t *testing.T, a []byte, b uint64) {
+		paddedBytes, err := binary.PadBytes(a, b)
+		if err != nil {
+			t.Error(err)
+		}
+
+		unpaddedBytes, err := binary.UnpadBytes(paddedBytes)
+		if err != nil {
+			t.Error(err)
+		} else if !bytes.Equal(unpaddedBytes, a) {
+			t.Errorf("expected %v to match %v", unpaddedBytes, a)
+		}
+	})
+}
