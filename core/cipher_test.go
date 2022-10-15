@@ -2,8 +2,7 @@ package core
 
 import (
 	"bytes"
-	"math/rand"
-	"testing"
+	"testing"	
 )
 
 func FuzzGESCipher(f *testing.F) {
@@ -14,8 +13,10 @@ func FuzzGESCipher(f *testing.F) {
 	}
 
 	// Generate a random 32-bit key
-	key := make([]byte, cipher.blockSize / 16)
-	rand.Read(key)
+	key, err := RandomBytes(cipher.blockSize / 16)
+	if err != nil {
+		f.Error(err)
+	}
 
 	f.Add([]byte("Hello world"))
 	f.Add([]byte("foo bar"))
