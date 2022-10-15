@@ -57,7 +57,18 @@ func (c *GESCipher) runEncryption(
 
 func (c *GESCipher) encrypt(block []byte, key []byte) ([]byte, error) {
 	halfBlockSize := c.blockSize / 16
-	leftBlock, rightBlock, err := c.runEncryption(block[:halfBlockSize], block[halfBlockSize:], key, c.rounds)
+
+	// Do Initial scrabling
+	inputLeftBlock, err := c.binary.RunNXOR(block[:halfBlockSize], key)
+	if err != nil {
+		return nil, err
+	}
+	inputRightBlock, err := c.binary.RunNXOR(block[halfBlockSize:], key)
+	if err != nil {
+		return nil, err
+	}
+
+	leftBlock, rightBlock, err := c.runEncryption(inputLeftBlock, inputRightBlock, key, c.rounds)
 	if err != nil {
 		return nil, err
 	}
@@ -128,9 +139,19 @@ func (c *GESCipher) decrypt(block []byte, key []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	// Undo Initial scrabling
+	outputLeftBlock, err := c.binary.RunNXOR(leftBlock, key)
+	if err != nil {
+		return nil, err
+	}
+	inputRightBlock, err := c.binary.RunNXOR(rightBlock, key)
+	if err != nil {
+		return nil, err
+	}
+
 	output := make([]byte, 0)
-	output = append(output, leftBlock...)
-	output = append(output, rightBlock...)
+	output = append(output, outputLeftBlock...)
+	output = append(output, inputRightBlock...)
 
 	return output, nil
 }
