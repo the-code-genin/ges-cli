@@ -22,10 +22,8 @@ func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte,
 	// Create the round key by flipping every odd-indexed bit of the round byte
 	roundKey := make([]byte, len(key))
 	roundKey = append(roundKey, key...)
-	for i := 0; i < 8; i++ {
-		if i % 2 != 0 || i == 0 {
-			roundByte = roundByte ^ (1 << i)
-		}
+	for i := 1; i < 8; i+=2 {
+		roundByte = roundByte ^ (1 << i)
 	}
 	roundKey[roundByteIndex] = roundByte
 
