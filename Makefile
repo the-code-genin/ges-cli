@@ -1,2 +1,4 @@
-all: 
-	@go build -o build/bin/ges_cli ./
+ges:
+	@go build -o build/bin/ges ./cmd/ges/
+
+all: ges

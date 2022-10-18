@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	encryptionFlags = []cli.Flag{
+	decryptionFlags = []cli.Flag{
 		keyFileFlag,
 		keyFormatFlag,
 		inputFormatFlag,
@@ -16,23 +16,23 @@ var (
 		outputFileFlag,
 	}
 
-	encryptionCommand = &cli.Command{
-		Name: "encrypt",
-		Usage: "Encrypt data. The block size is always double the key size.",
-		Action: encryptionAction,
-		Flags: encryptionFlags,
+	decryptionCommand = &cli.Command{
+		Name: "decrypt",
+		Usage: "Decrypt data. The block size is always double the key size.",
+		Action: decryptionAction,
+		Flags: decryptionFlags,
 	}
 )
 
-func encryptionAction(ctx *cli.Context) error {
-	// Open the plaintext file
+func decryptionAction(ctx *cli.Context) error {
+	// Open the cipher text file
 	args := ctx.Args()
 	if args.Len() != 1 {
 		return fmt.Errorf("expected the path of the file to be encrypted as the argument")
 	}
 
-	plainFilePath := args.First()
-	plainFile, err := core.OpenFile(plainFilePath)
+	cipherTextFilePath := args.First()
+	cipherTextFile, err := core.OpenFile(cipherTextFilePath)
 	if err != nil {
 		return err
 	}
@@ -62,25 +62,25 @@ func encryptionAction(ctx *cli.Context) error {
 		}
 	}
 
-	// Encrypt the plain text
+	// Decrypt the cipher text
 	keySize := uint64(len(key) * 8)
 	if keySize != 64 {
 		return fmt.Errorf("key sizes must be 64 bits")
 	}
 
-	plainFileLen, err := core.LengthOfFile(plainFile)
+	cipherTextFileLen, err := core.LengthOfFile(cipherTextFile)
 	if err != nil {
 		return err
 	}
 
-	plainText, err := core.ReadFile(plainFile, 0, int(plainFileLen))
+	cipherText, err := core.ReadFile(cipherTextFile, 0, int(cipherTextFileLen))
 	if err != nil {
 		return err
 	}
 
 	inputFormat := ctx.String("input.format")
 	if inputFormat != "binary" {
-		plainText, err = core.DecodeBytes(string(plainText), inputFormat)
+		cipherText, err = core.DecodeBytes(string(cipherText), inputFormat)
 		if err != nil {
 			return err
 		}
@@ -91,7 +91,7 @@ func encryptionAction(ctx *cli.Context) error {
 		return err
 	}
 
-	cipherText, err := cipher.Encrypt(plainText, key)
+	plainText, err := cipher.Decrypt(cipherText, key)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func encryptionAction(ctx *cli.Context) error {
 			return err
 		}
 
-		err = core.WriteToFile(file, 0, cipherText)
+		err = core.WriteToFile(file, 0, plainText)
 		if err != nil {
 			return err
 		}
@@ -119,20 +119,20 @@ func encryptionAction(ctx *cli.Context) error {
 			return err
 		}
 	} else {
-		encodedCipherText, err := core.EncodeBytes(cipherText, encodingFormat)
+		encodedPlainText, err := core.EncodeBytes(plainText, encodingFormat)
 		if err != nil {
 			return err
 		}
 
 		if outputFilePath == "" {
-			fmt.Print(encodedCipherText)
+			fmt.Print(encodedPlainText)
 		} else {
 			file, err := core.OpenFile(outputFilePath)
 			if err != nil {
 				return err
 			}
 	
-			err = core.WriteToFile(file, 0, []byte(encodedCipherText))
+			err = core.WriteToFile(file, 0, []byte(encodedPlainText))
 			if err != nil {
 				return err
 			}
