@@ -5,13 +5,13 @@ import "github.com/urfave/cli/v2"
 var (
 	keyFileFlag = &cli.StringFlag{
 		Name:     "key.file",
-		Usage:    "The key file path.",
+		Usage:    "The key file path",
 		Required: true,
 	}
 
 	keyFormatFlag = &cli.StringFlag{
 		Name:       "key.format",
-		Usage:      "The key file format. Available options are \"binary\", \"hex\" and \"base64\".",
+		Usage:      "The key file format. Available options are \"binary\", \"hex\" and \"base64\"",
 		Value:      "binary",
 		Required:   true,
 		HasBeenSet: true,
@@ -19,7 +19,7 @@ var (
 
 	inputFormatFlag = &cli.StringFlag{
 		Name:       "input.format",
-		Usage:      "The input format. Available options are \"binary\", \"hex\" and \"base64\".",
+		Usage:      "The input format. Available options are \"binary\", \"hex\" and \"base64\"",
 		Value:      "binary",
 		Required:   true,
 		HasBeenSet: true,
@@ -27,7 +27,7 @@ var (
 
 	outputFormatFlag = &cli.StringFlag{
 		Name:       "output.format",
-		Usage:      "The output format. Available options are \"binary\", \"hex\" and \"base64\".",
+		Usage:      "The output format. Available options are \"binary\", \"hex\" and \"base64\"",
 		Value:      "binary",
 		Required:   true,
 		HasBeenSet: true,

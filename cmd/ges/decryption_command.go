@@ -18,7 +18,7 @@ var (
 
 	decryptionCommand = &cli.Command{
 		Name: "decrypt",
-		Usage: "Decrypt data. The block size is always double the key size.",
+		Usage: "Decrypt data",
 		Action: decryptionAction,
 		Flags: decryptionFlags,
 	}

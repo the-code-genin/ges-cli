@@ -15,7 +15,7 @@ var (
 
 	keygenCommand = &cli.Command{
 		Name:   "keygen",
-		Usage:  "Generate a new encryption key.",
+		Usage:  "Generate a new encryption key",
 		Flags:  keygenFlags,
 		Action: keygenAction,
 	}

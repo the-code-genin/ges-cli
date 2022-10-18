@@ -12,7 +12,7 @@ var (
 
 func init() {
 	app = &cli.App{
-		Name:  "ges-cli",
+		Name:  "ges",
 		Usage: "A simple encryption algorithm to securly communicate over the internet and obfuscate your data.",
 		Commands: []*cli.Command{
 			keygenCommand,

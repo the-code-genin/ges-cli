@@ -18,7 +18,7 @@ var (
 
 	encryptionCommand = &cli.Command{
 		Name: "encrypt",
-		Usage: "Encrypt data. The block size is always double the key size.",
+		Usage: "Encrypt data",
 		Action: encryptionAction,
 		Flags: encryptionFlags,
 	}
