@@ -13,6 +13,7 @@ const (
 
 	byteAXORB  = byte(0x6A)
 	byteANXORB = byte(0x95)
+	byteCXOR0  = byteC
 	byteCNXOR0 = byte(0x67)
 )
 
@@ -35,7 +36,7 @@ func TestXOR(t *testing.T) {
 
 		assert.Equal(t, int(2), len(res))
 		assert.Equal(t, byteAXORB, res[0])
-		assert.Equal(t, byteC, res[1])
+		assert.Equal(t, byteCXOR0, res[1])
 	})
 }
 
