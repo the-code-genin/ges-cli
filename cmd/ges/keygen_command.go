@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/the-code-genin/ges-cli/core"
+	"github.com/the-code-genin/ges-cli/internal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -22,7 +23,7 @@ var (
 )
 
 func keygenAction(ctx *cli.Context) error {
-	key, err := core.RandomBytes(64 / 8)
+	key, err := internal.RandomBytes(64 / 8)
 	if err != nil {
 		return err
 	}

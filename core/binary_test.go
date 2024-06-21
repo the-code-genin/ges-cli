@@ -3,6 +3,8 @@ package core
 import (
 	"bytes"
 	"testing"
+
+	"github.com/the-code-genin/ges-cli/internal"
 )
 
 func FuzzBitConversion(f *testing.F) {
@@ -25,31 +27,31 @@ func FuzzBitConversion(f *testing.F) {
 func FuzzBitPadding(f *testing.F) {
 	f.Add([]byte("Hello world"), uint64(32))
 
-	tinyBlock, err := RandomBytes(16)
+	tinyBlock, err := internal.RandomBytes(16)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(tinyBlock, uint64(64))
 
-	smallBlock, err := RandomBytes(48)
+	smallBlock, err := internal.RandomBytes(48)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(smallBlock, uint64(64))
 
-	midBlock, err := RandomBytes(256)
+	midBlock, err := internal.RandomBytes(256)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(midBlock, uint64(32))
 
-	largeBlock, err := RandomBytes(512)
+	largeBlock, err := internal.RandomBytes(512)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(largeBlock, uint64(64))
 
-	superLargeBlock, err := RandomBytes(2560)
+	superLargeBlock, err := internal.RandomBytes(2560)
 	if err != nil {
 		f.Error(err)
 	}

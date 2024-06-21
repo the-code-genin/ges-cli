@@ -3,11 +3,13 @@ package core
 import (
 	"bytes"
 	"testing"
+
+	"github.com/the-code-genin/ges-cli/internal"
 )
 
 func FuzzEncoding(f *testing.F) {
 	for _, i := range []uint64{4, 2, 8, 12} {
-		randBytes, err := RandomBytes(i)
+		randBytes, err := internal.RandomBytes(i)
 		if err != nil {
 			f.Error(err)
 		}

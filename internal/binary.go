@@ -1,6 +1,9 @@
 package internal
 
-import "math"
+import (
+	"crypto/rand"
+	"math"
+)
 
 // Automatically pads both byte blocks so that they each have equal length.
 func autoPadBytes(blockA, blockB []byte) ([]byte, []byte) {
@@ -41,4 +44,13 @@ func NXOR(blockA, blockB []byte) []byte {
 	}
 
 	return output
+}
+
+// Generate random bytes of fixed length
+func RandomBytes(length uint64) ([]byte, error) {
+	key := make([]byte, length)
+	if _, err := rand.Read(key); err != nil {
+		return nil, err
+	}
+	return key, nil
 }

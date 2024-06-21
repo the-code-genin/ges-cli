@@ -2,7 +2,9 @@ package core
 
 import (
 	"bytes"
-	"testing"	
+	"testing"
+
+	"github.com/the-code-genin/ges-cli/internal"
 )
 
 func FuzzGESCipher(f *testing.F) {
@@ -12,38 +14,38 @@ func FuzzGESCipher(f *testing.F) {
 	}
 
 	// Generate a random 64-bit key
-	key, err := RandomBytes(cipher.blockSize / 16)
+	key, err := internal.RandomBytes(cipher.blockSize / 16)
 	if err != nil {
 		f.Error(err)
 	}
 
 	f.Add([]byte("Hello world"))
 
-	tinyBlock, err := RandomBytes(16)
+	tinyBlock, err := internal.RandomBytes(16)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(tinyBlock)
 
-	smallBlock, err := RandomBytes(48)
+	smallBlock, err := internal.RandomBytes(48)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(smallBlock)
 
-	midBlock, err := RandomBytes(256)
+	midBlock, err := internal.RandomBytes(256)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(midBlock)
 
-	largeBlock, err := RandomBytes(512)
+	largeBlock, err := internal.RandomBytes(512)
 	if err != nil {
 		f.Error(err)
 	}
 	f.Add(largeBlock)
 
-	superLargeBlock, err := RandomBytes(2560)
+	superLargeBlock, err := internal.RandomBytes(2560)
 	if err != nil {
 		f.Error(err)
 	}
