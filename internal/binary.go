@@ -2,7 +2,7 @@ package internal
 
 import "math"
 
-// Automatically pads both byte blocks as that they each have equal length.
+// Automatically pads both byte blocks so that they each have equal length.
 func autoPadBytes(blockA, blockB []byte) ([]byte, []byte) {
 	lengthDiff := int(math.Abs(float64(len(blockA) - len(blockB))))
 
