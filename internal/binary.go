@@ -40,7 +40,7 @@ func NXOR(blockA, blockB []byte) []byte {
 
 	output := make([]byte, 0)
 	for i := 0; i < len(blockA); i++ {
-		output = append(output, (blockA[i]^blockB[i])^0xff)
+		output = append(output, ^(blockA[i] ^ blockB[i]))
 	}
 
 	return output
