@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"math"
+
+	"github.com/the-code-genin/ges-cli/internal"
 )
 
 type GESCipher struct {
@@ -22,12 +24,12 @@ func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte,
 	// Create the round key by flipping every odd-indexed bit of the round byte
 	roundKey := make([]byte, len(key))
 	roundKey = append(roundKey, key...)
-	for i := 1; i < 8; i+=2 {
+	for i := 1; i < 8; i += 2 {
 		roundByte = roundByte ^ (1 << i)
 	}
 	roundKey[roundByteIndex] = roundByte
 
-	return c.binary.RunXOR(block, key)
+	return internal.XOR(block, key), nil
 }
 
 func (c *GESCipher) runEncryption(
@@ -45,10 +47,7 @@ func (c *GESCipher) runEncryption(
 		return nil, nil, err
 	}
 
-	outputRightBlock, err := c.binary.RunXOR(leftBlock, roundFuncOutput)
-	if err != nil {
-		return nil, nil, err
-	}
+	outputRightBlock := internal.XOR(leftBlock, roundFuncOutput)
 
 	return c.runEncryption(rightBlock, outputRightBlock, key, round-1)
 }
@@ -57,14 +56,8 @@ func (c *GESCipher) encrypt(block []byte, key []byte) ([]byte, error) {
 	halfBlockSize := c.blockSize / 16
 
 	// Do Initial scrabling
-	inputLeftBlock, err := c.binary.RunNXOR(block[:halfBlockSize], key)
-	if err != nil {
-		return nil, err
-	}
-	inputRightBlock, err := c.binary.RunNXOR(block[halfBlockSize:], key)
-	if err != nil {
-		return nil, err
-	}
+	inputLeftBlock := internal.NXOR(block[:halfBlockSize], key)
+	inputRightBlock := internal.NXOR(block[halfBlockSize:], key)
 
 	leftBlock, rightBlock, err := c.runEncryption(inputLeftBlock, inputRightBlock, key, c.rounds)
 	if err != nil {
@@ -122,10 +115,7 @@ func (c *GESCipher) runDecryption(
 		return nil, nil, err
 	}
 
-	outputLeftBlock, err := c.binary.RunXOR(rightBlock, roundFuncOutput)
-	if err != nil {
-		return nil, nil, err
-	}
+	outputLeftBlock := internal.XOR(rightBlock, roundFuncOutput)
 
 	return c.runDecryption(outputLeftBlock, leftBlock, key, round-1)
 }
@@ -138,14 +128,8 @@ func (c *GESCipher) decrypt(block []byte, key []byte) ([]byte, error) {
 	}
 
 	// Undo Initial scrabling
-	outputLeftBlock, err := c.binary.RunNXOR(leftBlock, key)
-	if err != nil {
-		return nil, err
-	}
-	inputRightBlock, err := c.binary.RunNXOR(rightBlock, key)
-	if err != nil {
-		return nil, err
-	}
+	outputLeftBlock := internal.NXOR(leftBlock, key)
+	inputRightBlock := internal.NXOR(rightBlock, key)
 
 	output := make([]byte, 0)
 	output = append(output, outputLeftBlock...)
