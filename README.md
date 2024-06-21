@@ -42,7 +42,6 @@ Decryption is similar with the following process:
 
 ***Special Notes:***
 
-- All APIs expect byte arrays to be in the little-endian format.
 - Like any other cipher, attempting to decrypt a cipher text with the wrong cipher key will not give the expected plain text. But neverthelesss, a plain text will be generated.
 - The GES algorithm **should not** be used in a production environment as it does not meet any international standards for encryption (It is a proof of concept).
 
