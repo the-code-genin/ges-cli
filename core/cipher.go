@@ -29,7 +29,7 @@ func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte,
 	}
 	roundKey[roundByteIndex] = roundByte
 
-	return internal.XOR(block, key), nil
+	return internal.XOR(block, key)
 }
 
 func (c *GESCipher) runEncryption(
@@ -47,7 +47,10 @@ func (c *GESCipher) runEncryption(
 		return nil, nil, err
 	}
 
-	outputRightBlock := internal.XOR(leftBlock, roundFuncOutput)
+	outputRightBlock, err := internal.XOR(leftBlock, roundFuncOutput)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return c.runEncryption(rightBlock, outputRightBlock, key, round-1)
 }
@@ -56,8 +59,15 @@ func (c *GESCipher) encrypt(block []byte, key []byte) ([]byte, error) {
 	halfBlockSize := c.blockSize / 16
 
 	// Do Initial scrabling
-	inputLeftBlock := internal.NXOR(block[:halfBlockSize], key)
-	inputRightBlock := internal.NXOR(block[halfBlockSize:], key)
+	inputLeftBlock, err := internal.NXOR(block[:halfBlockSize], key)
+	if err != nil {
+		return nil, err
+	}
+
+	inputRightBlock, err := internal.NXOR(block[halfBlockSize:], key)
+	if err != nil {
+		return nil, err
+	}
 
 	leftBlock, rightBlock, err := c.runEncryption(inputLeftBlock, inputRightBlock, key, c.rounds)
 	if err != nil {
@@ -115,7 +125,10 @@ func (c *GESCipher) runDecryption(
 		return nil, nil, err
 	}
 
-	outputLeftBlock := internal.XOR(rightBlock, roundFuncOutput)
+	outputLeftBlock, err := internal.XOR(rightBlock, roundFuncOutput)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return c.runDecryption(outputLeftBlock, leftBlock, key, round-1)
 }
@@ -128,8 +141,15 @@ func (c *GESCipher) decrypt(block []byte, key []byte) ([]byte, error) {
 	}
 
 	// Undo Initial scrabling
-	outputLeftBlock := internal.NXOR(leftBlock, key)
-	inputRightBlock := internal.NXOR(rightBlock, key)
+	outputLeftBlock, err := internal.NXOR(leftBlock, key)
+	if err != nil {
+		return nil, err
+	}
+
+	inputRightBlock, err := internal.NXOR(rightBlock, key)
+	if err != nil {
+		return nil, err
+	}
 
 	output := make([]byte, 0)
 	output = append(output, outputLeftBlock...)
