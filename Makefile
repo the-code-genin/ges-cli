@@ -1,7 +1,10 @@
-test: test
+.PHONY: test
+test:
 	go test -v ./...
 
+.PHONY: ges
 ges:
-	@go build -o build/bin/ges ./cmd/ges/
+	@go build -o build/bin/ges ./cmd/ges
 
-all: ges
+.PHONY: build
+build: ges
