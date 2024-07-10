@@ -50,7 +50,7 @@ func keygenAction(ctx *cli.Context) error {
 			return err
 		}
 	} else {
-		encodedKey, err := core.EncodeBytes(key, encodingFormat)
+		encodedKey, err := internal.EncodeBytes(internal.EncodingFormat(encodingFormat), key)
 		if err != nil {
 			return err
 		}

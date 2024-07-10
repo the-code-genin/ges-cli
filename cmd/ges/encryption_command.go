@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/the-code-genin/ges-cli/core"
+	"github.com/the-code-genin/ges-cli/internal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -56,7 +57,7 @@ func encryptionAction(ctx *cli.Context) error {
 
 	keyFormat := ctx.String("key.format")
 	if keyFormat != "binary" {
-		key, err = core.DecodeBytes(string(key), keyFormat)
+		key, err = internal.DecodeBytes(internal.EncodingFormat(keyFormat), string(key))
 		if err != nil {
 			return err
 		}
@@ -80,7 +81,7 @@ func encryptionAction(ctx *cli.Context) error {
 
 	inputFormat := ctx.String("input.format")
 	if inputFormat != "binary" {
-		plainText, err = core.DecodeBytes(string(plainText), inputFormat)
+		plainText, err = internal.DecodeBytes(internal.EncodingFormat(inputFormat), string(plainText))
 		if err != nil {
 			return err
 		}
@@ -119,7 +120,7 @@ func encryptionAction(ctx *cli.Context) error {
 			return err
 		}
 	} else {
-		encodedCipherText, err := core.EncodeBytes(cipherText, encodingFormat)
+		encodedCipherText, err := internal.EncodeBytes(internal.EncodingFormat(encodingFormat), cipherText)
 		if err != nil {
 			return err
 		}
