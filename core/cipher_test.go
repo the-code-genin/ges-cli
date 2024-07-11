@@ -4,8 +4,25 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/the-code-genin/ges-cli/internal"
 )
+
+func Test_roundKey(t *testing.T) {
+	data, err := internal.RandomBytes(16)
+	assert.NoError(t, err)
+
+	encoded, err := internal.EncodeBytes(internal.EncodingFormatHex, data)
+	assert.NoError(t, err)
+	t.Logf(encoded)
+
+	key, err := roundKey(0, data)
+	assert.NoError(t, err)
+
+	encoded, err = internal.EncodeBytes(internal.EncodingFormatHex, key)
+	assert.NoError(t, err)
+	t.Logf(encoded)
+}
 
 func FuzzGESCipher(f *testing.F) {
 	cipher, err := NewGESCipher()

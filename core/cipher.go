@@ -7,6 +7,12 @@ import (
 	"github.com/the-code-genin/ges-cli/internal"
 )
 
+const (
+	BlockSize = 128
+	KeySize   = 64
+	Rounds    = 8
+)
+
 type GESCipher struct {
 	binary    Binary
 	blockSize uint64
@@ -15,6 +21,11 @@ type GESCipher struct {
 
 // Extract the round key from the master key
 func roundKey(round uint8, masterKey []byte) ([]byte, error) {
+	// There can only be 8 rounds
+	if int(round) > len(sBoxes)-1 {
+		return nil, internal.ErrInvalidRound
+	}
+
 	// Ensure master key has 128 bits
 	if len(masterKey) != 16 {
 		return nil, internal.ErrInvalidKeyLength
@@ -125,7 +136,87 @@ func roundKey(round uint8, masterKey []byte) ([]byte, error) {
 		bitPosition++
 	}
 
-	return shiftedKey, nil
+	// Final substituted key only has 64 bits
+	substitutedKey := make([]byte, 8)
+
+	// Apply S-Box to each set of 6 bits
+	// There are 16 6-bit pairs in all
+	sBox := sBoxes[round]
+	for set := 0; set < 16; set++ {
+		// Parse the s-box input
+		input := byte(0)
+		for bitIndex := 0; bitIndex < 6; bitIndex++ {
+			bitPosition := (set * 6) + bitIndex
+
+			// Determine which byte and position within the byte of the shiftedKey to extract the bit
+			oldBytePosition := bitPosition / 8
+			oldBitIndex := bitPosition - (oldBytePosition * 8)
+
+			// Extract the bit from the master key
+			oldBitMask := byte(1) << (7 - oldBitIndex)
+			oldTargetBit := shiftedKey[oldBytePosition] & oldBitMask
+
+			// Create the bit mask
+			newBitMask := byte(0)
+			if oldTargetBit != 0 {
+				newBitMask = byte(1) << (5 - bitIndex)
+			}
+
+			input |= newBitMask
+		}
+
+		// Parse the row
+		row := byte(0)
+
+		if input&(byte(1)<<5) != 0 {
+			row |= 2
+		}
+
+		if input&byte(1) != 0 {
+			row |= 1
+		}
+
+		// Parse the column
+		col := byte(0)
+
+		if input&(byte(1)<<1) != 0 {
+			col |= byte(1)
+		}
+
+		if input&(byte(1)<<2) != 0 {
+			col |= byte(1) << 1
+		}
+
+		if input&(byte(1)<<3) != 0 {
+			col |= byte(1) << 2
+		}
+
+		if input&(byte(1)<<4) != 0 {
+			col |= byte(1) << 3
+		}
+
+		// compute and store the s-box output
+		output := sBox[row][col]
+		for bitIndex := 0; bitIndex < 4; bitIndex++ {
+			// Create a bit mask for the output
+			outputBitMask := output & (byte(1) << (3 - bitIndex))
+
+			// Determine which byte and position within the byte of the substitutedKey to insert the bit
+			bitPosition := (set * 4) + bitIndex
+			newBytePosition := bitPosition / 8
+			newBitIndex := bitPosition - (newBytePosition * 8)
+
+			// Set the bit on the substituted key
+			newBitMask := byte(0)
+			if outputBitMask != 0 {
+				newBitMask = byte(1) << (7 - newBitIndex)
+			}
+
+			substitutedKey[newBytePosition] |= newBitMask
+		}
+	}
+
+	return substitutedKey, nil
 }
 
 func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte, error) {
