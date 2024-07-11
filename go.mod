@@ -2,8 +2,6 @@ module github.com/the-code-genin/ges-cli
 
 go 1.22
 
-toolchain go1.22.3
-
 require github.com/urfave/cli/v2 v2.19.2
 
 require (
