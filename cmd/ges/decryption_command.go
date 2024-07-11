@@ -75,7 +75,7 @@ func decryptionAction(ctx *cli.Context) error {
 	// Writing to specified file
 	if outputFilePath != "" {
 		var err error
-		outputStream, err = os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE, 0755)
+		outputStream, err = os.OpenFile(outputFilePath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
 			return err
 		}
@@ -84,11 +84,16 @@ func decryptionAction(ctx *cli.Context) error {
 	defer outputStream.Close()
 
 	// Use ECB method to incrementally read and decrypt data blocks
-	cipherBlock := make([]byte, 16)
+	var cipherBlock []byte
 	for {
-		_, readErr := inputStream.Read(cipherBlock)
+		cipherBlock = make([]byte, 16)
+		readBytes, readErr := inputStream.Read(cipherBlock)
 		if readErr != nil && readErr != io.EOF {
 			return readErr
+		}
+
+		if readBytes == 0 || readErr == io.EOF {
+			break
 		}
 
 		plainBlock, err := core.Decrypt(cipherBlock, key)
@@ -96,14 +101,24 @@ func decryptionAction(ctx *cli.Context) error {
 			return err
 		}
 
-		_, err = outputStream.Write(plainBlock)
-		if err != nil {
-			return err
+		// If last block contains null byte
+		// strip the plain block till the padded bit
+		if plainBlock[readBytes-1] == byte(0) {
+			for i := len(plainBlock) - 2; i >= 0; i-- {
+				if plainBlock[i] == byte(1)<<7 {
+					plainBlock = plainBlock[:i]
+					break
+				}
+			}
 		}
 
-		if readErr == io.EOF {
-			break
+		if _, err = outputStream.Write(plainBlock); err != nil {
+			return err
 		}
+	}
+
+	if err := outputStream.Sync(); err != nil {
+		return err
 	}
 
 	return nil
