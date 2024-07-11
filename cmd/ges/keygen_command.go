@@ -47,8 +47,11 @@ func keygenAction(ctx *cli.Context) error {
 			return err
 		}
 
-		_, err = file.WriteString(encodedKey)
-		if err != nil {
+		if _, err = file.WriteString(encodedKey); err != nil {
+			return err
+		}
+
+		if err := file.Sync(); err != nil {
 			return err
 		}
 
@@ -66,8 +69,11 @@ func keygenAction(ctx *cli.Context) error {
 			return err
 		}
 
-		_, err = file.Write(key)
-		if err != nil {
+		if _, err = file.Write(key); err != nil {
+			return err
+		}
+
+		if err := file.Sync(); err != nil {
 			return err
 		}
 
