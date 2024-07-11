@@ -4,7 +4,7 @@ test:
 
 .PHONY: ges
 ges:
-	@go build -o build/bin/ges ./cmd/ges
+	go build -o build/bin/ges ./cmd/ges
 
 .PHONY: build
 build: ges
