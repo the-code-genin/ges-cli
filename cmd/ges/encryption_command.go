@@ -84,11 +84,25 @@ func encryptionAction(ctx *cli.Context) error {
 	defer outputStream.Close()
 
 	// Use ECB method to incrementally read and encrypt data blocks
-	plainBlock := make([]byte, 16)
+	var (
+		plainBlock   []byte
+		appendedByte bool
+	)
+
 	for {
-		_, readErr := inputStream.Read(plainBlock)
+		plainBlock = make([]byte, 16)
+		readBytes, readErr := inputStream.Read(plainBlock)
 		if readErr != nil && readErr != io.EOF {
 			return readErr
+		}
+
+		if readBytes == 0 || readErr == io.EOF {
+			break
+		}
+
+		if readBytes != 16 {
+			plainBlock[readBytes] = byte(1) << 7
+			appendedByte = true
 		}
 
 		cipherBlock, err := core.Encrypt(plainBlock, key)
@@ -96,14 +110,22 @@ func encryptionAction(ctx *cli.Context) error {
 			return err
 		}
 
-		_, err = outputStream.Write(cipherBlock)
-		if err != nil {
+		if _, err = outputStream.Write(cipherBlock); err != nil {
 			return err
 		}
+	}
 
-		if readErr == io.EOF {
-			break
+	if !appendedByte {
+		plainBlock = make([]byte, 16)
+		plainBlock[0] = byte(1) << 7
+
+		if _, err = outputStream.Write(plainBlock); err != nil {
+			return err
 		}
+	}
+
+	if err := outputStream.Sync(); err != nil {
+		return err
 	}
 
 	return nil
