@@ -25,6 +25,11 @@ var (
 		HasBeenSet: true,
 	}
 
+	inputFileFlag = &cli.StringFlag{
+		Name:  "input.file",
+		Usage: "The input file path",
+	}
+
 	outputFormatFlag = &cli.StringFlag{
 		Name:       "output.format",
 		Usage:      "The output format. Available options are \"binary\", \"hex\" and \"base64\"",
