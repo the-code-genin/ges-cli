@@ -62,7 +62,7 @@ func encryptionAction(ctx *cli.Context) error {
 
 	defer inputStream.Close()
 
-	// Get the output stream for decryption
+	// Get the output stream for encryption
 	var outputStream *os.File
 
 	outputFilePath := ctx.String(outputFileFlag.Name)
