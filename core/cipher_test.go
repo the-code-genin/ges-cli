@@ -12,16 +12,11 @@ func Test_roundKey(t *testing.T) {
 	data, err := internal.RandomBytes(16)
 	assert.NoError(t, err)
 
-	encoded, err := internal.EncodeBytes(internal.EncodingFormatHex, data)
-	assert.NoError(t, err)
-	t.Logf(encoded)
-
-	key, err := roundKey(0, data)
-	assert.NoError(t, err)
-
-	encoded, err = internal.EncodeBytes(internal.EncodingFormatHex, key)
-	assert.NoError(t, err)
-	t.Logf(encoded)
+	for i := uint8(0); i < 8; i++ {
+		key, err := roundKey(i, data)
+		assert.NoError(t, err)
+		assert.Len(t, key, 8)
+	}
 }
 
 func FuzzGESCipher(f *testing.F) {
