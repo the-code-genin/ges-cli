@@ -243,12 +243,13 @@ func encryptRound(leftBlock, rightBlock, masterKey []byte, round uint8) ([]byte,
 	return rightBlock, blockXor, nil
 }
 
-func Encrypt(data, key []byte) ([]byte, error) {
-	if len(data) != 16 {
+// Encrypt a block of data
+func Encrypt(block, key []byte) ([]byte, error) {
+	if len(block) != 16 {
 		return nil, internal.ErrUnequalBlockLength
 	}
 
-	leftBlock, rightBlock := data[:8], data[8:]
+	leftBlock, rightBlock := block[:8], block[8:]
 	var err error
 
 	for i := uint8(0); i < 8; i++ {
@@ -261,6 +262,51 @@ func Encrypt(data, key []byte) ([]byte, error) {
 	output := make([]byte, 0)
 	output = append(output, rightBlock...)
 	output = append(output, leftBlock...)
+	return output, nil
+}
+
+// Run the decryption round operation on two blocks
+func decryptRound(leftBlock, rightBlock, masterKey []byte, round uint8) ([]byte, []byte, error) {
+	if len(leftBlock) != 8 || len(rightBlock) != 8 {
+		return nil, nil, internal.ErrUnequalBlockLength
+	}
+
+	key, err := roundKey(round, masterKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	blockXOR, err := internal.XOR(rightBlock, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	keyXor, err := internal.XOR(leftBlock, blockXOR)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return keyXor, leftBlock, nil
+}
+
+func Decrypt(block, key []byte) ([]byte, error) {
+	if len(block) != 16 {
+		return nil, internal.ErrUnequalBlockLength
+	}
+
+	leftBlock, rightBlock := block[8:], block[:8]
+	var err error
+
+	for i := uint8(0); i < 8; i++ {
+		leftBlock, rightBlock, err = decryptRound(leftBlock, rightBlock, key, 7-i)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	output := make([]byte, 0)
+	output = append(output, leftBlock...)
+	output = append(output, rightBlock...)
 	return output, nil
 }
 

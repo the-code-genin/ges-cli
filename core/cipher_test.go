@@ -19,6 +19,22 @@ func Test_roundKey(t *testing.T) {
 	}
 }
 
+func TestCipher(t *testing.T) {
+	data, err := internal.RandomBytes(16)
+	assert.NoError(t, err)
+
+	key, err := internal.RandomBytes(16)
+	assert.NoError(t, err)
+
+	cipherBlock, err := Encrypt(data, key)
+	assert.NoError(t, err)
+
+	plainBlock, err := Decrypt(cipherBlock, key)
+	assert.NoError(t, err)
+
+	assert.Equal(t, data, plainBlock)
+}
+
 func FuzzGESCipher(f *testing.F) {
 	cipher, err := NewGESCipher()
 	if err != nil {
