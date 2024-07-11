@@ -219,6 +219,51 @@ func roundKey(round uint8, masterKey []byte) ([]byte, error) {
 	return substitutedKey, nil
 }
 
+// Run the encryption round operation on two blocks
+func encryptRound(leftBlock, rightBlock, masterKey []byte, round uint8) ([]byte, []byte, error) {
+	if len(leftBlock) != 8 || len(rightBlock) != 8 {
+		return nil, nil, internal.ErrUnequalBlockLength
+	}
+
+	key, err := roundKey(round, masterKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	keyXor, err := internal.XOR(rightBlock, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	blockXor, err := internal.XOR(keyXor, leftBlock)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return rightBlock, blockXor, nil
+}
+
+func Encrypt(data, key []byte) ([]byte, error) {
+	if len(data) != 16 {
+		return nil, internal.ErrUnequalBlockLength
+	}
+
+	leftBlock, rightBlock := data[:8], data[8:]
+	var err error
+
+	for i := uint8(0); i < 8; i++ {
+		leftBlock, rightBlock, err = encryptRound(leftBlock, rightBlock, key, i)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	output := make([]byte, 0)
+	output = append(output, rightBlock...)
+	output = append(output, leftBlock...)
+	return output, nil
+}
+
 func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte, error) {
 	if len(key) != int(c.rounds) {
 		return nil, fmt.Errorf("keys must be 64 bits long")
