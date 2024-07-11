@@ -13,6 +13,121 @@ type GESCipher struct {
 	rounds    uint8
 }
 
+// Extract the round key from the master key
+func roundKey(round uint8, masterKey []byte) ([]byte, error) {
+	// Ensure master key has 128 bits
+	if len(masterKey) != 16 {
+		return nil, internal.ErrInvalidKeyLength
+	}
+
+	// Parity dropped key is 2 bytes lesser
+	strippedKey := make([]byte, 14)
+
+	// Bit position to insert the next bit
+	bitPosition := 0
+
+	// Perform parity dropping for every 8 bits
+	for i := 0; i < 128; i++ {
+		// Skip every 8-th bit
+		if (i+1)%8 == 0 {
+			continue
+		}
+
+		// Determine which byte and position within the byte of the masterkey to extract the bit
+		oldBytePosition := i / 8
+		oldBitIndex := i - (oldBytePosition * 8)
+
+		// Extract the bit from the master key
+		oldBitMask := byte(1) << (7 - oldBitIndex)
+		oldTargetBit := masterKey[oldBytePosition] & oldBitMask
+
+		// Determine which byte and position within the byte of the strippedKey to insert the bit
+		newBytePosition := bitPosition / 8
+		newBitIndex := bitPosition - (newBytePosition * 8)
+
+		// Create the bit mask
+		newBitMask := byte(0)
+		if oldTargetBit != 0 {
+			newBitMask = byte(1) << (7 - newBitIndex)
+		}
+
+		// Turn the bit on if it exists
+		strippedKey[newBytePosition] |= newBitMask
+
+		bitPosition++
+	}
+
+	// Bit shifted key is 2 bytes lesser than stripped key
+	shiftedKey := make([]byte, 12)
+
+	// Reset the bit position in the stripped key
+	bitPosition = 0
+
+	// Bit index should only go from 0 to 6
+	// -1 here is an initial value
+	bitIndex := -1
+
+	// Perform bit shifting which converts every 7 bits to 6 bits
+	// Shift formula: 1234567 => 132657
+	for i := 0; i < 112; i++ {
+		// Ensure bit index is never equal to -1 and never exceeds 6
+		bitIndex++
+		bitIndex %= 7
+
+		// Skip the 4th bit
+		if bitIndex == 3 {
+			continue
+		}
+
+		// Determine which byte and position within the byte of the strippedKey to extract the bit
+		oldBytePosition := i / 8
+		oldBitIndex := i - (oldBytePosition * 8)
+
+		// Swap the 2nd and 5th bits with their next bits
+		if bitIndex == 1 || bitIndex == 4 {
+			oldBitIndex++
+		}
+
+		// Swap the 3rd and 6th bits with their previous bits
+		if bitIndex == 2 || bitIndex == 5 {
+			oldBitIndex--
+		}
+
+		// Flows into the next byte
+		if oldBitIndex > 7 {
+			oldBitIndex = 0
+			oldBytePosition++
+		}
+
+		// Flows into the previous byte
+		if oldBitIndex < 0 {
+			oldBitIndex = 7
+			oldBytePosition--
+		}
+
+		// Extract the bit from the master key
+		oldBitMask := byte(1) << (7 - oldBitIndex)
+		oldTargetBit := strippedKey[oldBytePosition] & oldBitMask
+
+		// Determine which byte and position within the byte of the shiftedKey to insert the bit
+		newBytePosition := bitPosition / 8
+		newBitIndex := bitPosition - (newBytePosition * 8)
+
+		// Create the bit mask
+		newBitMask := byte(0)
+		if oldTargetBit != 0 {
+			newBitMask = byte(1) << (7 - newBitIndex)
+		}
+
+		// Turn the bit on if it exists
+		shiftedKey[newBytePosition] |= newBitMask
+
+		bitPosition++
+	}
+
+	return shiftedKey, nil
+}
+
 func (c *GESCipher) runRoundFunc(block []byte, key []byte, round uint8) ([]byte, error) {
 	if len(key) != int(c.rounds) {
 		return nil, fmt.Errorf("keys must be 64 bits long")
