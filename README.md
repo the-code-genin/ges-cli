@@ -1,6 +1,6 @@
 # GES CLI
 
-The software utilizes a simple block cipher encryption algorithm to encrypt and decrypt data. It uses an **weak** home-grown encryption algorithm called **GES** based off of the feistel cipher structure.
+The software utilizes a simple block cipher encryption algorithm to encrypt and decrypt data. It uses a **weak** home-grown encryption algorithm called **GES** based off of the feistel cipher structure.
 
 Developed and maintained by [Mohammed Adekunle](https://mohammedadekunle.com.ng)
 
@@ -40,10 +40,10 @@ Decryption is similar with the following process:
 
 - Run `./ges decrypt --key.file <key_file> --output.file <output_file> <ciphertext_file>` with `ciphertext_file` referring to the cipher text file you wish to decrypt, `<key_file>` being your cipher key, and `<output_file>` being your plain text output file. *Note:* The software works the files contents, it does not utilize the file name.
 
-***Note:***
+***Special Notes:***
 
-- Like an other cipher, attempting to decrypt a cipher text with the wrong cipher key will not give a proper plain text. But neverthelesss, a plain text will be generated.
-- The GES algorithm **should not** be used in a production environment as it does not meet any international standards for encryption(It's just a fun project). 
+- Like any other cipher, attempting to decrypt a cipher text with the wrong cipher key will not give the expected plain text. But neverthelesss, a plain text will be generated.
+- The GES algorithm **should not** be used in a production environment as it does not meet any international standards for encryption (It is a proof of concept).
 
 ## License
 

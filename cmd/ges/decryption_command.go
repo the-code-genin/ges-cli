@@ -1,147 +1,124 @@
 package main
 
 import (
-	"fmt"
+	"io"
+	"os"
 
 	"github.com/the-code-genin/ges-cli/core"
+	"github.com/the-code-genin/ges-cli/internal"
 	"github.com/urfave/cli/v2"
 )
 
 var (
-	decryptionFlags = []cli.Flag{
-		keyFileFlag,
-		keyFormatFlag,
-		inputFormatFlag,
-		outputFormatFlag,
-		outputFileFlag,
-	}
-
 	decryptionCommand = &cli.Command{
-		Name: "decrypt",
-		Usage: "Decrypt data",
+		Name:   "decrypt",
+		Usage:  "Decrypt data",
 		Action: decryptionAction,
-		Flags: decryptionFlags,
+		Flags: []cli.Flag{
+			keyFileFlag,
+			keyFormatFlag,
+			inputFileFlag,
+			outputFileFlag,
+		},
 	}
 )
 
 func decryptionAction(ctx *cli.Context) error {
-	// Open the cipher text file
-	args := ctx.Args()
-	if args.Len() != 1 {
-		return fmt.Errorf("expected the path of the file to be encrypted as the argument")
-	}
-
-	cipherTextFilePath := args.First()
-	cipherTextFile, err := core.OpenFile(cipherTextFilePath)
+	// Read the key file
+	key, err := os.ReadFile(ctx.String(keyFileFlag.Name))
 	if err != nil {
 		return err
 	}
 
-	// Read the key
-	keyFilePath := ctx.String("key.file")
-	keyFile, err := core.OpenFile(keyFilePath)
-	if err != nil {
-		return err
-	}
-
-	keyFileLen, err := core.LengthOfFile(keyFile)
-	if err != nil {
-		return err
-	}
-
-	key, err := core.ReadFile(keyFile, 0, int(keyFileLen))
-	if err != nil {
-		return err
-	}
-
-	keyFormat := ctx.String("key.format")
-	if keyFormat != "binary" {
-		key, err = core.DecodeBytes(string(key), keyFormat)
+	switch keyFormat := ctx.String(keyFormatFlag.Name); keyFormat {
+	case internal.EncodingFormatHex.String(), internal.EncodingFormatBase64.String():
+		key, err = internal.DecodeBytes(internal.EncodingFormat(keyFormat), string(key))
 		if err != nil {
 			return err
 		}
 	}
 
-	// Decrypt the cipher text
-	keySize := uint64(len(key) * 8)
-	if keySize != 64 {
-		return fmt.Errorf("key sizes must be 64 bits")
+	if len(key) != 16 {
+		return internal.ErrInvalidKeyLength
 	}
 
-	cipherTextFileLen, err := core.LengthOfFile(cipherTextFile)
-	if err != nil {
-		return err
+	// Get input stream for decryption
+	var inputStream *os.File
+	inputFilePath := ctx.String(inputFileFlag.Name)
+
+	// Reading from standard input
+	if inputFilePath == "" {
+		inputStream = os.Stdin
 	}
 
-	cipherText, err := core.ReadFile(cipherTextFile, 0, int(cipherTextFileLen))
-	if err != nil {
-		return err
-	}
-
-	inputFormat := ctx.String("input.format")
-	if inputFormat != "binary" {
-		cipherText, err = core.DecodeBytes(string(cipherText), inputFormat)
+	// Reading from specified file
+	if inputFilePath != "" {
+		var err error
+		inputStream, err = os.Open(inputFilePath)
 		if err != nil {
 			return err
 		}
 	}
 
-	cipher, err := core.NewGESCipher()
-	if err != nil {
-		return err
+	defer inputStream.Close()
+
+	// Get the output stream for decryption
+	var outputStream *os.File
+
+	outputFilePath := ctx.String(outputFileFlag.Name)
+
+	// Writing to standard output
+	if outputFilePath == "" {
+		outputStream = os.Stdout
 	}
 
-	plainText, err := cipher.Decrypt(cipherText, key)
-	if err != nil {
-		return err
+	// Writing to specified file
+	if outputFilePath != "" {
+		var err error
+		outputStream, err = os.OpenFile(outputFilePath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
-	// Record the output
-	outputFilePath := ctx.String("output.file")
-	encodingFormat := ctx.String("output.format")
-	if encodingFormat == "binary" {
-		if outputFilePath == "" {
-			return fmt.Errorf("output file path is required for binary encoding")
+	defer outputStream.Close()
+
+	// Use ECB method to incrementally read and decrypt data blocks
+	var cipherBlock []byte
+	for {
+		cipherBlock = make([]byte, 16)
+		readBytes, readErr := inputStream.Read(cipherBlock)
+		if readErr != nil && readErr != io.EOF {
+			return readErr
 		}
 
-		file, err := core.OpenFile(outputFilePath)
+		if readBytes == 0 || readErr == io.EOF {
+			break
+		}
+
+		plainBlock, err := core.Decrypt(cipherBlock, key)
 		if err != nil {
 			return err
 		}
 
-		err = core.WriteToFile(file, 0, plainText)
-		if err != nil {
-			return err
-		}
-
-		err = file.Sync()
-		if err != nil {
-			return err
-		}
-	} else {
-		encodedPlainText, err := core.EncodeBytes(plainText, encodingFormat)
-		if err != nil {
-			return err
-		}
-
-		if outputFilePath == "" {
-			fmt.Print(encodedPlainText)
-		} else {
-			file, err := core.OpenFile(outputFilePath)
-			if err != nil {
-				return err
-			}
-	
-			err = core.WriteToFile(file, 0, []byte(encodedPlainText))
-			if err != nil {
-				return err
-			}
-	
-			err = file.Sync()
-			if err != nil {
-				return err
+		// If last block contains null byte
+		// strip the plain block till the padded bit
+		if plainBlock[readBytes-1] == byte(0) {
+			for i := len(plainBlock) - 2; i >= 0; i-- {
+				if plainBlock[i] == byte(1)<<7 {
+					plainBlock = plainBlock[:i]
+					break
+				}
 			}
 		}
+
+		if _, err = outputStream.Write(plainBlock); err != nil {
+			return err
+		}
+	}
+
+	if err := outputStream.Sync(); err != nil {
+		return err
 	}
 
 	return nil

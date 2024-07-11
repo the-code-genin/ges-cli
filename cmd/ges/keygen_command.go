@@ -2,75 +2,83 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/the-code-genin/ges-cli/core"
+	"github.com/the-code-genin/ges-cli/internal"
 	"github.com/urfave/cli/v2"
 )
 
 var (
-	keygenFlags = []cli.Flag{
-		outputFormatFlag,
-		outputFileFlag,
-	}
-
 	keygenCommand = &cli.Command{
-		Name:   "keygen",
-		Usage:  "Generate a new encryption key",
-		Flags:  keygenFlags,
+		Name:  "keygen",
+		Usage: "Generate a new encryption key",
+		Flags: []cli.Flag{
+			outputFormatFlag,
+			outputFileFlag,
+		},
 		Action: keygenAction,
 	}
 )
 
 func keygenAction(ctx *cli.Context) error {
-	key, err := core.RandomBytes(64 / 8)
+	key, err := internal.RandomBytes(16)
 	if err != nil {
 		return err
 	}
 
-	outputFilePath := ctx.String("output.file")
-	encodingFormat := ctx.String("output.format")
-	if encodingFormat == "binary" {
+	outputFilePath := ctx.String(outputFileFlag.Name)
+	encodingFormat := ctx.String(outputFormatFlag.Name)
+
+	switch encodingFormat {
+	case internal.EncodingFormatHex.String(), internal.EncodingFormatBase64.String():
+		encodedKey, err := internal.EncodeBytes(internal.EncodingFormat(encodingFormat), key)
+		if err != nil {
+			return err
+		}
+
+		// Print encoded key to standard output if file isn't specified
 		if outputFilePath == "" {
-			return fmt.Errorf("output file path is required for binary encoding")
+			fmt.Println(encodedKey)
+			break
 		}
 
-		file, err := core.OpenFile(outputFilePath)
+		file, err := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			return err
 		}
 
-		err = core.WriteToFile(file, 0, key)
-		if err != nil {
+		if _, err = file.WriteString(encodedKey); err != nil {
 			return err
 		}
 
-		err = file.Sync()
-		if err != nil {
-			return err
-		}
-	} else {
-		encodedKey, err := core.EncodeBytes(key, encodingFormat)
-		if err != nil {
+		if err := file.Sync(); err != nil {
 			return err
 		}
 
+		if err = file.Close(); err != nil {
+			return err
+		}
+
+	default:
 		if outputFilePath == "" {
-			fmt.Print(encodedKey)
-		} else {
-			file, err := core.OpenFile(outputFilePath)
-			if err != nil {
-				return err
-			}
-	
-			err = core.WriteToFile(file, 0, []byte(encodedKey))
-			if err != nil {
-				return err
-			}
-	
-			err = file.Sync()
-			if err != nil {
-				return err
-			}
+			return internal.ErrRequiredOutputFilePath
+		}
+
+		file, err := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE, 0755)
+		if err != nil {
+			return err
+		}
+
+		if _, err = file.Write(key); err != nil {
+			return err
+		}
+
+		if err := file.Sync(); err != nil {
+			return err
+		}
+
+		if err = file.Close(); err != nil {
+			return err
 		}
 	}
 

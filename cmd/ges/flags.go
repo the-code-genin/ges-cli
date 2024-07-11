@@ -17,12 +17,9 @@ var (
 		HasBeenSet: true,
 	}
 
-	inputFormatFlag = &cli.StringFlag{
-		Name:       "input.format",
-		Usage:      "The input format. Available options are \"binary\", \"hex\" and \"base64\"",
-		Value:      "binary",
-		Required:   true,
-		HasBeenSet: true,
+	inputFileFlag = &cli.StringFlag{
+		Name:  "input.file",
+		Usage: "The input file path",
 	}
 
 	outputFormatFlag = &cli.StringFlag{
@@ -34,7 +31,7 @@ var (
 	}
 
 	outputFileFlag = &cli.StringFlag{
-		Name:    "output.file",
-		Usage:   "The output file path. Required for \"binary\" output format",
+		Name:  "output.file",
+		Usage: "The output file path. Required for \"binary\" output format",
 	}
 )
