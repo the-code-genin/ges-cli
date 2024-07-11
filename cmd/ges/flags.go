@@ -34,7 +34,7 @@ var (
 	}
 
 	outputFileFlag = &cli.StringFlag{
-		Name:    "output.file",
-		Usage:   "The output file path. Required for \"binary\" output format",
+		Name:  "output.file",
+		Usage: "The output file path. Required for \"binary\" output format",
 	}
 )
