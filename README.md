@@ -1,12 +1,12 @@
 # GES CLI
 
-The software utilizes a simple block cipher encryption algorithm to encrypt and decrypt data. It uses a **weak** home-grown encryption algorithm called **GES** based off of the feistel cipher structure.
+The software utilizes a simple block cipher encryption algorithm to encrypt and decrypt data. It uses a home-grown encryption algorithm called **GES** based off of the feistel cipher structure.
 
 Developed and maintained by [Mohammed Adekunle](https://mohammedadekunle.com.ng)
 
 ## GES Algorithm
 
-Based off of the feistel cipher structure, the block size of the algorithm is 128 bits with a 64 bit key size. It utilizes an initial NXOR operation between the block and the key to scramble the data rather than utilizing a P-box. A XOR operation is utilized for the round function between the right-half block and the round key.
+Based off of the feistel cipher structure, the block size of the algorithm is 128 bits with a 128 bit key. It utilizes a parity drop for every 8th-bit to reduce the key size to 112 bits, followed by a shift function which condenses the key to 96 bits. Then DES S-Box substitution is done to generate unique 64-bit round keys.
 
 ## Installation
 
@@ -14,7 +14,7 @@ You can compile the binary manually using the `go build` command or you can comp
 
 ### Via Go Build
 
-To compile via `go build`, you will require a recent version of the `go` binary installed. Then follow the steps below:
+To compile via `go build`, you will require the `go 1.22` binary installed. Then follow the steps below:
 
 - Run `cd cmd/ges` to change your terminal path
 - Run `go build .` to generate a build of the `ges cli` for your operating system architecture
@@ -24,21 +24,17 @@ To compile via `go build`, you will require a recent version of the `go` binary 
 
 To compile via `make`, you will require a recent version of the `make` utility installed. Then follow the steps below:
 
-- Run `make all` to trigger an automated build of the project
+- Run `make build` to trigger an automated build of the project
 - Run `cd build/bin`to change your terminal path to the build directory
 - Run `./ges` to get started
 
 ## Usage
 
-Before you can get started with encryption or decryption you need to generate an cipher key. Cipher keys for the `GES` algorithm need to be 64 bits large. An utiliy is provided for this in the `ges` binary called `keygen`. To generate a cipher key, simply run `ges keygen --output.file <file>` with `<file>` being the path of the output file for the key relative to the terminal path.
+Before you can get started with encryption or decryption you need to generate an cipher key. Cipher keys for the `GES` algorithm need to be 128-bits large. An utiliy is provided for this in the `ges` binary called `keygen`.
 
-Next, we can try a simple encryption process by following this step:
+To encrypt data, an `encrypt` utility is provided in the `ges` binary which can either encrypt a provided input file or encrypt data directly from the standard input.
 
-- Run `./ges encrypt --key.file <key_file> --output.file <output_file> <plaintext_file>` with `plaintext_file` referring to the plain text file you wish to encrypt, `<key_file>` being your cipher key, and `<output_file>` being your cipher text output file. *Note:* The software works the files contents, it does not utilize the file name.
-
-Decryption is similar with the following process:
-
-- Run `./ges decrypt --key.file <key_file> --output.file <output_file> <ciphertext_file>` with `ciphertext_file` referring to the cipher text file you wish to decrypt, `<key_file>` being your cipher key, and `<output_file>` being your plain text output file. *Note:* The software works the files contents, it does not utilize the file name.
+Decryption is similar with with the `decrypt` utility in the `ges` binary which can also decrypt a provided input file or decrypt directly from the standard input.
 
 ***Special Notes:***
 
