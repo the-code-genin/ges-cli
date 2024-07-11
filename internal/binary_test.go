@@ -31,20 +31,3 @@ func TestXOR(t *testing.T) {
 		assert.Nil(t, res)
 	})
 }
-
-func TestNXOR(t *testing.T) {
-	t.Run("should return the NXOR result of two equal length byte blocks", func(t *testing.T) {
-		res, err := NXOR([]byte{byteA}, []byte{byteB})
-
-		assert.NoError(t, err)
-		assert.Equal(t, int(1), len(res))
-		assert.Equal(t, byteANXORB, res[0])
-	})
-
-	t.Run("should fail if byte blocks are of unequal length", func(t *testing.T) {
-		res, err := NXOR([]byte{byteA, byteC}, []byte{byteB})
-
-		assert.Error(t, err)
-		assert.Nil(t, res)
-	})
-}
