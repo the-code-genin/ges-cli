@@ -58,9 +58,9 @@ func decryptionAction(ctx *cli.Context) error {
 		if err != nil {
 			return err
 		}
-	}
 
-	defer inputStream.Close()
+		defer inputStream.Close()
+	}
 
 	// Get the output stream for decryption
 	var outputStream *os.File
@@ -79,9 +79,12 @@ func decryptionAction(ctx *cli.Context) error {
 		if err != nil {
 			return err
 		}
-	}
 
-	defer outputStream.Close()
+		defer func() {
+			outputStream.Sync()
+			outputStream.Close()
+		}()
+	}
 
 	// Use ECB method to incrementally read and decrypt data blocks
 	var cipherBlock []byte
@@ -115,10 +118,6 @@ func decryptionAction(ctx *cli.Context) error {
 		if _, err = outputStream.Write(plainBlock); err != nil {
 			return err
 		}
-	}
-
-	if err := outputStream.Sync(); err != nil {
-		return err
 	}
 
 	return nil
