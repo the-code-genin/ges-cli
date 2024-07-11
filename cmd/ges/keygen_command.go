@@ -21,13 +21,13 @@ var (
 )
 
 func keygenAction(ctx *cli.Context) error {
-	key, err := internal.RandomBytes(8)
+	key, err := internal.RandomBytes(16)
 	if err != nil {
 		return err
 	}
 
-	outputFilePath := ctx.String("output.file")
-	encodingFormat := ctx.String("output.format")
+	outputFilePath := ctx.String(outputFileFlag.Name)
+	encodingFormat := ctx.String(outputFormatFlag.Name)
 
 	switch encodingFormat {
 	case internal.EncodingFormatHex.String(), internal.EncodingFormatBase64.String():
