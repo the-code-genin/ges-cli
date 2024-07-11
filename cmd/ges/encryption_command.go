@@ -75,7 +75,7 @@ func encryptionAction(ctx *cli.Context) error {
 	// Writing to specified file
 	if outputFilePath != "" {
 		var err error
-		outputStream, err = os.OpenFile(inputFilePath, os.O_WRONLY|os.O_CREATE, 0755)
+		outputStream, err = os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			return err
 		}
