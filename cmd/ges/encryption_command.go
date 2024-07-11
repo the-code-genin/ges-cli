@@ -119,7 +119,12 @@ func encryptionAction(ctx *cli.Context) error {
 		plainBlock = make([]byte, 16)
 		plainBlock[0] = byte(1) << 7
 
-		if _, err = outputStream.Write(plainBlock); err != nil {
+		cipherBlock, err := core.Encrypt(plainBlock, key)
+		if err != nil {
+			return err
+		}
+
+		if _, err = outputStream.Write(cipherBlock); err != nil {
 			return err
 		}
 	}
