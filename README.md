@@ -12,9 +12,17 @@ Based off of the feistel cipher structure, the block size of the algorithm is 12
 
 You can compile the binary manually using the `go build` command or you can compile via the build system using the `make` tool.
 
+### Via Go Install
+To install locally via `go install`. Run the command below:
+
+```shell
+go install github.com/the-code-genin/ges-cli/cmd/ges@latest
+ges --version
+```
+
 ### Via Go Build
 
-To compile via `go build`, you will require the `go 1.22` binary installed. Then follow the steps below:
+To compile via `go build`, you will require at least `go 1.22` installed. Then follow the steps below:
 
 - Run `cd cmd/ges` to change your terminal path
 - Run `go build .` to generate a build of the `ges cli` for your operating system architecture
